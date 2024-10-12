@@ -2,6 +2,7 @@
 
 namespace Ledc\WebmanUser;
 
+use LogicException;
 use ReflectionClass;
 use ReflectionException;
 use Throwable;
@@ -14,6 +15,7 @@ use Webman\MiddlewareInterface;
  * - 支持路由参数
  * - 支持OPTIONS请求的空响应
  * - 支持JSON响应
+ * - 支持验证数据限制
  */
 class UserMiddleware implements MiddlewareInterface
 {
@@ -44,21 +46,16 @@ class UserMiddleware implements MiddlewareInterface
             return $handler($request);
         }
 
-        // 已登录
-        if (session('user')) {
-            return $handler($request);
-        }
-
         // OPTIONS请求，直接返回
         if ('OPTIONS' === $request->method()) {
             return response('');
         }
 
-        $controller = $request->controller;
-        $action = $request->action;
-        $route = $request->route;
-
         try {
+            $controller = $request->controller;
+            $action = $request->action;
+            $route = $request->route;
+
             // 401是未登录时固定返回码
             $code = 401;
             $msg = '请登录';
@@ -71,9 +68,17 @@ class UserMiddleware implements MiddlewareInterface
                 $class = new ReflectionClass($controller);
                 $properties = $class->getDefaultProperties();
                 $noNeedLogin = $properties[self::noNeedLogin] ?? [];
-                // 不需要登录
+                $dataLimit = $properties['dataLimit'] ?? true;
+                $dataLimitField = $properties['dataLimitField'] ?? '';
+                // 判断是否跳过登录验证
                 if ('*' === $noNeedLogin || in_array('*', $noNeedLogin, true) || in_array($action, $noNeedLogin, true)) {
+                    // 不需要登录
                     return $handler($request);
+                }
+
+                // 需要登录，验证数据限制
+                if ($dataLimit && empty($dataLimitField)) {
+                    throw new LogicException('控制器错误：数据限制字段不能为空');
                 }
             } else {
                 // 默认路由 $request->route为null，所以需要判断 $request->route 是否为空
@@ -86,6 +91,11 @@ class UserMiddleware implements MiddlewareInterface
                     // 指定路由不用登录
                     return $handler($request);
                 }
+            }
+
+            // 判断是否已登录
+            if (session('user') && user_id()) {
+                return $handler($request);
             }
         } catch (ReflectionException $exception) {
             $msg = '控制器不存在';
