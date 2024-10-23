@@ -69,9 +69,11 @@ class Crud extends Base
      */
     public function delete(Request $request): Response
     {
-        $ids = $this->deleteInput($request);
-        $this->doDelete($ids);
-        return $this->success();
+        $count = 0;
+        if ($ids = $this->deleteInput($request)) {
+            $count = $this->model->destroy($ids);
+        }
+        return $this->success('ok', ['count' => $count]);
     }
 
     /**
@@ -358,22 +360,6 @@ class Crud extends Base
     }
 
     /**
-     * 执行删除
-     * @param array $ids
-     * @return void
-     */
-    protected function doDelete(array $ids): void
-    {
-        if (!$ids) {
-            return;
-        }
-        $primary_key = $this->model->getKeyName();
-        $this->model->whereIn($primary_key, $ids)->each(function ($model) {
-            $model->delete();
-        });
-    }
-
-    /**
      * 格式化树
      * @param $items
      * @return Response
@@ -468,6 +454,6 @@ class Crud extends Base
      */
     protected function guessName($item): mixed
     {
-        return $item->title ?? $item->name ?? $item->nickname ?? $item->username ?? $item->id;
+        return $item->title ?? $item->name ?? $item->nickname ?? $item->username ?? $item->getKeyName();
     }
 }
