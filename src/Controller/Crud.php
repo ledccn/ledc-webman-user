@@ -10,6 +10,7 @@ use support\exception\BusinessException;
 use support\Model;
 use support\Request;
 use support\Response;
+use Throwable;
 use function Ledc\WebmanUser\user_id;
 
 /**
@@ -21,6 +22,52 @@ class Crud extends Base
      * @var Model|null
      */
     protected Model|null $model = null;
+
+    /**
+     * 查询单条数据
+     * - 支持排序字段、支持复杂查询
+     * @param Request $request
+     * @return Response
+     */
+    public function first(Request $request): Response
+    {
+        try {
+            [$where, $format, $limit, $field, $order] = $this->selectInput($request);
+            $query = $this->doSelect($where, $field, $order);
+
+            $model = $query->first();
+            if (!$model) {
+                return $this->fail('数据不存在');
+            }
+            return $this->success('ok', $model->toArray());
+        } catch (Throwable $throwable) {
+            return $this->fail($throwable->getMessage());
+        }
+    }
+
+    /**
+     * 查询单条数据
+     * - 不支持排序字段
+     * @param Request $request
+     * @return Response
+     */
+    public function find(Request $request): Response
+    {
+        try {
+            $where = $this->inputFilter($request->get());
+            if ($this->dataLimit) {
+                $where[$this->dataLimitField] = user_id();
+            }
+
+            $model = ($this->model)::query()->where($where)->first();
+            if (!$model) {
+                return $this->fail('数据不存在');
+            }
+            return $this->success('ok', $model->toArray());
+        } catch (Throwable $throwable) {
+            return $this->fail($throwable->getMessage());
+        }
+    }
 
     /**
      * 查询
