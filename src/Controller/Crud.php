@@ -10,6 +10,7 @@ use support\exception\BusinessException;
 use support\Model;
 use support\Request;
 use support\Response;
+use Throwable;
 use function Ledc\WebmanUser\user_id;
 
 /**
@@ -21,6 +22,52 @@ class Crud extends Base
      * @var Model|null
      */
     protected Model|null $model = null;
+
+    /**
+     * 查询单条数据
+     * - 支持排序字段、支持复杂查询
+     * @param Request $request
+     * @return Response
+     */
+    public function first(Request $request): Response
+    {
+        try {
+            [$where, $format, $limit, $field, $order] = $this->selectInput($request);
+            $query = $this->doSelect($where, $field, $order);
+
+            $model = $query->first();
+            if (!$model) {
+                return $this->fail('数据不存在');
+            }
+            return $this->success('ok', $model->toArray());
+        } catch (Throwable $throwable) {
+            return $this->fail($throwable->getMessage());
+        }
+    }
+
+    /**
+     * 查询单条数据
+     * - 不支持排序字段
+     * @param Request $request
+     * @return Response
+     */
+    public function find(Request $request): Response
+    {
+        try {
+            $where = $this->inputFilter($request->get());
+            if ($this->dataLimit) {
+                $where[$this->dataLimitField] = user_id();
+            }
+
+            $model = ($this->model)::query()->where($where)->first();
+            if (!$model) {
+                return $this->fail('数据不存在');
+            }
+            return $this->success('ok', $model->toArray());
+        } catch (Throwable $throwable) {
+            return $this->fail($throwable->getMessage());
+        }
+    }
 
     /**
      * 查询
@@ -69,9 +116,11 @@ class Crud extends Base
      */
     public function delete(Request $request): Response
     {
-        $ids = $this->deleteInput($request);
-        $this->doDelete($ids);
-        return $this->success();
+        $count = 0;
+        if ($ids = $this->deleteInput($request)) {
+            $count = $this->model->destroy($ids);
+        }
+        return $this->success('ok', ['count' => $count]);
     }
 
     /**
@@ -358,22 +407,6 @@ class Crud extends Base
     }
 
     /**
-     * 执行删除
-     * @param array $ids
-     * @return void
-     */
-    protected function doDelete(array $ids): void
-    {
-        if (!$ids) {
-            return;
-        }
-        $primary_key = $this->model->getKeyName();
-        $this->model->whereIn($primary_key, $ids)->each(function ($model) {
-            $model->delete();
-        });
-    }
-
-    /**
      * 格式化树
      * @param $items
      * @return Response
@@ -468,6 +501,6 @@ class Crud extends Base
      */
     protected function guessName($item): mixed
     {
-        return $item->title ?? $item->name ?? $item->nickname ?? $item->username ?? $item->id;
+        return $item->title ?? $item->name ?? $item->nickname ?? $item->username ?? $item->getKeyName();
     }
 }
