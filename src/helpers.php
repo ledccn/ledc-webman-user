@@ -3,6 +3,7 @@
 namespace Ledc\WebmanUser;
 
 use plugin\admin\app\model\Base;
+use plugin\admin\app\model\User;
 use support\exception\BusinessException;
 use support\Model;
 use support\Redis;
@@ -14,6 +15,59 @@ use support\Redis;
 function user_id(): ?int
 {
     return session('user.id');
+}
+
+/**
+ * 当前登录用户
+ * @param array|string|null $fields
+ * @return array|mixed|null
+ */
+function user(array|string $fields = null): mixed
+{
+    refresh_user_session();
+    if (!$user = session('user')) {
+        return null;
+    }
+    if ($fields === null) {
+        return $user;
+    }
+    if (is_array($fields)) {
+        $results = [];
+        foreach ($fields as $field) {
+            $results[$field] = $user[$field] ?? null;
+        }
+        return $results;
+    }
+    return $user[$fields] ?? null;
+}
+
+/**
+ * 刷新当前用户session
+ * @param bool $force
+ * @return void
+ */
+function refresh_user_session(bool $force = false)
+{
+    if (!$user_id = user_id()) {
+        return null;
+    }
+    $time_now = time();
+    // session在2秒内不刷新
+    $session_ttl = 2;
+    $session_last_update_time = session('user.session_last_update_time', 0);
+    if (!$force && $time_now - $session_last_update_time < $session_ttl) {
+        return null;
+    }
+    $session = request()->session();
+    $user = User::find($user_id);
+    if (!$user) {
+        $session->forget('user');
+        return null;
+    }
+    $user = $user->toArray();
+    unset($user['password']);
+    $user['session_last_update_time'] = $time_now;
+    $session->set('user', $user);
 }
 
 /**
