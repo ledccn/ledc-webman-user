@@ -55,7 +55,7 @@ class Crud extends Base
     {
         try {
             $where = $this->inputFilter($request->get());
-            if ($this->dataLimit) {
+            if ($this->safeDataLimit()) {
                 $where[$this->dataLimitField] = user_id();
             }
 
