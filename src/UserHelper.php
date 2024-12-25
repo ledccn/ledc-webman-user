@@ -23,10 +23,15 @@ class UserHelper
      */
     public static function login(int|User|UserModel $id): void
     {
-        if ($id instanceof UserModel || $id instanceof User) {
+        if (!class_exists(User::class)) {
+            throw new Exception("请安装webman用户模块");
+        }
+
+        if ($id instanceof User) {
             $user = $id;
         } else {
-            $user = UserModel::find($id);
+            $user_id = $id instanceof UserModel ? $id->id : $id;
+            $user = User::find($user_id);
             if (!$user) {
                 throw new InvalidArgumentException('用户不存在');
             }
@@ -56,9 +61,13 @@ class UserHelper
      */
     public static function logout(Request $request): Response
     {
+        if (!class_exists(User::class)) {
+            throw new Exception("请安装webman用户模块");
+        }
+
         $session = $request->session();
         $userId = session('user.id');
-        if ($userId && $user = UserModel::find($userId)) {
+        if ($userId && $user = User::find($userId)) {
             // 发布退出事件
             Event::emit('user.logout', $user);
         }
