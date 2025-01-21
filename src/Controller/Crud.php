@@ -312,10 +312,10 @@ class Crud extends Base
             $user_id = user_id();
             $dataLimitField = $this->dataLimitField;
             if ($user_id !== $model->{$dataLimitField}) {
-                throw new BusinessException('无数据权限A');
+                throw new BusinessException('无数据权限，类型与值必须相等');
             }
             if (array_key_exists($dataLimitField, $data) && $user_id !== $data[$dataLimitField]) {
-                throw new BusinessException('无数据权限B');
+                throw new BusinessException('数据域权限验证失败，类型与值必须相等');
             }
         }
 
