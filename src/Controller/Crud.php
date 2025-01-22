@@ -35,6 +35,10 @@ class Crud extends Base
             [$where, $format, $limit, $field, $order] = $this->selectInput($request);
             $query = $this->doSelect($where, $field, $order);
 
+            // 查询前回调 2025年1月22日
+            if (method_exists($this, 'beforeQueryBuilder')) {
+                $this->beforeQueryBuilder($query);
+            }
             $model = $query->first();
             if (!$model) {
                 return $this->fail('数据不存在');
@@ -59,7 +63,12 @@ class Crud extends Base
                 $where[$this->dataLimitField] = user_id();
             }
 
-            $model = ($this->model)::query()->where($where)->first();
+            $query = ($this->model)::query();
+            // 查询前回调 2025年1月22日
+            if (method_exists($this, 'beforeQueryBuilder')) {
+                $this->beforeQueryBuilder($query);
+            }
+            $model = $query->where($where)->first();
             if (!$model) {
                 return $this->fail('数据不存在');
             }
