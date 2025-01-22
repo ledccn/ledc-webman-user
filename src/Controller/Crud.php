@@ -252,6 +252,11 @@ class Crud extends Base
             'table_tree' => 'formatTableTree',
             'normal' => 'formatNormal',
         ];
+        // 查询前回调 2025年1月22日
+        if (method_exists($this, 'beforeQueryBuilder')) {
+            $this->beforeQueryBuilder($query);
+        }
+
         $paginator = $query->paginate($limit);
         $total = $paginator->total();
         $items = $paginator->items();
