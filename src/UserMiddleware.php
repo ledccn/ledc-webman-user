@@ -97,6 +97,13 @@ class UserMiddleware implements MiddlewareInterface
             if (session('user') && user_id()) {
                 return $handler($request);
             }
+
+            // 支持JSON返回格式
+            if ($request->expectsJson()) {
+                return json(['code' => $code, 'msg' => $msg, 'data' => []]);
+            } else {
+                return redirect('/app/user/login');
+            }
         } catch (ReflectionException $exception) {
             $msg = '控制器不存在';
             $code = 404;
@@ -109,7 +116,7 @@ class UserMiddleware implements MiddlewareInterface
         if ($request->expectsJson()) {
             $response = json(['code' => $code, 'msg' => $msg, 'data' => []]);
         } else {
-            $response = redirect('/app/user/login');
+            $response = \response($msg, $code);
         }
 
         return $response;
