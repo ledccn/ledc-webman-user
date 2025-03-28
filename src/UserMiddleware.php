@@ -100,7 +100,7 @@ readonly class UserMiddleware implements MiddlewareInterface
             }
 
             // 支持JSON返回格式
-            if ($request->expectsJson()) {
+            if ($request->expectsJson() || $this->jsonResponse) {
                 return json(['code' => $code, 'msg' => $msg, 'data' => []]);
             } else {
                 return redirect('/app/user/login');
