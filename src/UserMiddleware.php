@@ -17,7 +17,7 @@ use Webman\MiddlewareInterface;
  * - 支持JSON响应
  * - 支持验证数据限制
  */
-class UserMiddleware implements MiddlewareInterface
+readonly class UserMiddleware implements MiddlewareInterface
 {
     /**
      * 无需登录的方法
@@ -28,8 +28,9 @@ class UserMiddleware implements MiddlewareInterface
     /**
      * 构造函数
      * @param array $excludedApps 排除的应用
+     * @param bool $jsonResponse 响应Json格式
      */
-    public function __construct(protected array $excludedApps = [])
+    public function __construct(protected array $excludedApps = [], protected bool $jsonResponse = false)
     {
     }
 
@@ -113,7 +114,7 @@ class UserMiddleware implements MiddlewareInterface
         }
 
         // 支持JSON返回格式
-        if ($request->expectsJson()) {
+        if ($request->expectsJson() || $this->jsonResponse) {
             $response = json(['code' => $code, 'msg' => $msg, 'data' => []]);
         } else {
             $response = \response($msg, $code);
