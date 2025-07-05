@@ -19,8 +19,8 @@
     ],
     "require": {
         "php": ">=8.3",
-        "workerman/webman-framework": "^1.5",
+        "workerman/webman-framework": ">=1.6",
         "webman/event": ">=1.0",
-        "webman/admin": "^0.6.31"
+        "webman/admin": ">=0.6.31"
     }
 }
