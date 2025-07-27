@@ -22,7 +22,7 @@ function user_id(): ?int
  * @param array|string|null $fields
  * @return array|mixed|null
  */
-function user(array|string $fields = null): mixed
+function user(array|string|null $fields = null): mixed
 {
     refresh_user_session();
     if (!$user = session('user')) {
