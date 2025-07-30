@@ -2,6 +2,7 @@
 
 namespace Ledc\WebmanUser;
 
+use Exception;
 use plugin\admin\app\model\Base;
 use plugin\admin\app\model\User;
 use support\exception\BusinessException;
@@ -11,6 +12,7 @@ use support\Redis;
 /**
  * 当前登录用户id
  * @return integer|null
+ * @throws Exception
  */
 function user_id(): ?int
 {
@@ -21,6 +23,7 @@ function user_id(): ?int
  * 当前登录用户
  * @param array|string|null $fields
  * @return array|mixed|null
+ * @throws Exception
  */
 function user(array|string|null $fields = null): mixed
 {
@@ -45,6 +48,7 @@ function user(array|string|null $fields = null): mixed
  * 刷新当前用户session
  * @param bool $force
  * @return void
+ * @throws Exception
  */
 function refresh_user_session(bool $force = false)
 {

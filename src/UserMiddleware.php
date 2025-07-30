@@ -105,7 +105,7 @@ readonly class UserMiddleware implements MiddlewareInterface
             } else {
                 return redirect('/app/user/login');
             }
-        } catch (ReflectionException $exception) {
+        } catch (ReflectionException) {
             $msg = '控制器不存在';
             $code = 404;
         } catch (Throwable $throwable) {

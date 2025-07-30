@@ -21,7 +21,7 @@ class Crud extends Base
     /**
      * @var Model|null
      */
-    protected Model|null $model = null;
+    protected ?Model $model = null;
 
     /**
      * 查询单条数据
@@ -296,7 +296,7 @@ class Crud extends Base
     protected function doInsert(array $data): mixed
     {
         $primary_key = $this->model->getKeyName();
-        $model_class = get_class($this->model);
+        $model_class = $this->model::class;
         $model = new $model_class;
         foreach ($data as $key => $val) {
             $model->{$key} = $val;
