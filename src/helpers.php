@@ -56,8 +56,8 @@ function refresh_user_session(bool $force = false)
         return null;
     }
     $time_now = time();
-    // session在2秒内不刷新
-    $session_ttl = 2;
+    // session在7200秒内不刷新
+    $session_ttl = 7200;
     $session_last_update_time = session('user.session_last_update_time', 0);
     if (!$force && $time_now - $session_last_update_time < $session_ttl) {
         return null;
