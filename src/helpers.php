@@ -12,7 +12,6 @@ use support\Redis;
 /**
  * 当前登录用户id
  * @return integer|null
- * @throws Exception
  */
 function user_id(): ?int
 {
@@ -23,7 +22,6 @@ function user_id(): ?int
  * 当前登录用户
  * @param array|string|null $fields
  * @return array|mixed|null
- * @throws Exception
  */
 function user(array|string|null $fields = null): mixed
 {

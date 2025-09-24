@@ -2,6 +2,7 @@
 
 namespace Ledc\WebmanUser\Controller;
 
+use InvalidArgumentException;
 use LogicException;
 use support\Model;
 use support\Response;
@@ -50,7 +51,7 @@ class Base
             }
 
             if (empty(user_id())) {
-                throw new LogicException('用户ID为空', 401);
+                throw new InvalidArgumentException('用户ID为空', 401);
             }
         }
 

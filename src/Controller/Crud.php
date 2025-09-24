@@ -186,12 +186,13 @@ class Crud extends Base
 
     /**
      * 指定查询where条件,并没有真正的查询数据库操作
-     * @param array $where
-     * @param string|null $field
-     * @param string $order
+     * @param array $where 查询条件
+     * @param string|null $field 查询字段
+     * @param string $order 排序字段
+     * @param array $with 关联
      * @return EloquentBuilder|QueryBuilder|Model|null
      */
-    protected function doSelect(array $where, ?string $field = null, string $order = 'desc'): EloquentBuilder|Model|QueryBuilder|null
+    protected function doSelect(array $where, ?string $field = null, string $order = 'desc', array $with = []): EloquentBuilder|Model|QueryBuilder|null
     {
         //按主键降序排列
         if (empty($field)) {
@@ -201,7 +202,7 @@ class Crud extends Base
             }
         }
 
-        $model = $this->model;
+        $model = ($this->model)::query();
         foreach ($where as $column => $value) {
             if (is_array($value)) {
                 if ($value[0] === 'like' || $value[0] === 'not like') {
@@ -234,17 +235,20 @@ class Crud extends Base
         if ($field) {
             $model = $model->orderBy($field, $order);
         }
+        if ($with) {
+            $model = $model->with($with);
+        }
         return $model;
     }
 
     /**
      * 执行真正查询，并返回格式化数据
-     * @param $query
-     * @param $format
-     * @param $limit
+     * @param EloquentBuilder|QueryBuilder|Model $query
+     * @param string $format
+     * @param int $limit
      * @return Response
      */
-    protected function doFormat($query, $format, $limit): Response
+    protected function doFormat(EloquentBuilder|QueryBuilder|Model $query, string $format, int $limit): Response
     {
         $methods = [
             'select' => 'formatSelect',
@@ -291,7 +295,7 @@ class Crud extends Base
     /**
      * 执行插入
      * @param array $data
-     * @return mixed|null
+     * @return mixed
      */
     protected function doInsert(array $data): mixed
     {
@@ -316,7 +320,7 @@ class Crud extends Base
         $primary_key = $this->model->getKeyName();
         $id = $request->post($primary_key);
         $data = $this->inputFilter($request->post());
-        $model = $this->model->find($id);
+        $model = ($this->model)::query()->find($id);
         if (!$model) {
             throw new BusinessException('记录不存在', 2);
         }
@@ -354,7 +358,7 @@ class Crud extends Base
      */
     protected function doUpdate($id, $data): void
     {
-        $model = $this->model->find($id);
+        $model = ($this->model)::query()->find($id);
         foreach ($data as $key => $val) {
             $model->{$key} = $val;
         }
@@ -411,7 +415,7 @@ class Crud extends Base
         }
         $ids = (array)$request->post($primary_key, []);
         if ($this->safeDataLimit()) {
-            $user_ids = $this->model->where($primary_key, $ids)->pluck($this->dataLimitField)->toArray();
+            $user_ids = ($this->model)::query()->where($primary_key, $ids)->pluck($this->dataLimitField)->toArray();
             if (array_diff($user_ids, [user_id()])) {
                 throw new BusinessException('无数据权限');
             }
