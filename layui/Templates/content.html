@@ -1,0 +1,51 @@
+<?=layui_template()->header($title, $options ?? [])?>
+<?=layui_template()->nav()?>
+
+<div class="layui-container ws-container">
+    <!-- 左侧菜单 -->
+    <div class="layui-panel ws-menu" id="WS_MENU">
+        <ul class="layui-menu ws-docs-menu">
+            <?php foreach ($list as $item) { ?>
+            <?php if ($item->articles->count()) { ?>
+            <li class="layui-menu-item-group" lay-options="{type: 'group', isAllowSpread: true}">
+                <div class="layui-menu-body-title" data-id="cate_id<?=$item->cate_id?>"><?=$item->title?></div>
+                <ul>
+                    <?php foreach ($item->articles as $article) { ?>
+                    <?php if ($article->article_id === $article_id) { ?>
+                    <li class="layui-menu-item-checked2"><?php } else { ?>
+                    <li><?php } ?>
+                        <div class="layui-menu-body-title" data-id="article_id<?=$article->article_id?>">
+                            <a href="<?=route('Docs.article', ['id' => $article->article_id])?>">
+                                <span><?=$article->title?></span>
+                                <?php if (false) { ?>
+                                <span class="layui-font-12 layui-font-gray"><i
+                                        class="layui-icon layui-icon-eye"></i><?=$article->views?></span>
+                                <?php } ?>
+                                <?=$article->badge?>
+                            </a>
+                        </div>
+                    </li>
+                    <?php } ?>
+                </ul>
+            </li>
+            <?php } ?>
+            <?php } ?>
+        </ul>
+    </div>
+
+    <!-- 右侧内容 -->
+    <div class="ws-content" style="margin-right: 0; !important;" id="WS_CONTENT">
+        <div class="layui-text ws-text" id="WS_TEXT">
+            <?=$content->content?>
+        </div>
+        <div class="ws-text-tools">
+            <?php if ($content->views) { ?>
+            <span class="layui-font-12 layui-font-gray">
+                <i class="layui-icon layui-icon-eye"></i>浏览量 <?=$content->views?>
+            </span>
+            <?php } ?>
+        </div>
+    </div>
+</div>
+
+<?=layui_template()->footer($options ?? [])?>

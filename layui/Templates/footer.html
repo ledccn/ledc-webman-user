@@ -1,0 +1,38 @@
+<?php if (empty($ws_menu_bar_hide)) { ?>
+<!-- 左侧菜单 -->
+<div class="ws-menu-bar layui-bg-green layui-hide">
+    <i class="layui-icon layui-icon-spread-left"></i>
+</div>
+<?php } ?>
+
+<!-- 页脚 -->
+<div class="layui-footer ws-footer">
+    <p>Copyright &copy; <?php echo date('Y'); ?>
+        <a href="//<?=$this->config->domain?>"><?=$this->config->title?></a>
+    </p>
+    <p>
+        <a target="_blank" href="https://beian.miit.gov.cn"><?=$icp?></a>
+        <?php if ($police && $police_link) {?>
+        <a target="_blank" href="<?=$police_link?>"><?=$police?></a>
+        <?php } ?>
+    </p>
+</div>
+<!-- 遮罩层 -->
+<div class="ws-shade"></div>
+<!-- 自定义JavaScript（/body前） -->
+<?php if ($custom_body_js) {echo '<script>' . PHP_EOL . $custom_body_js . PHP_EOL . '</script>' . PHP_EOL;} ?>
+<script>
+    layui.config({
+        base: '/layui/modules/',
+        version: '<?=$version?>',
+    }).use('index', function () {
+        console.log('应用初始化')
+    });
+</script>
+<!-- Footer区域：html -->
+<?php foreach($options->html as $_html) {
+echo $_html . PHP_EOL . PHP_EOL;
+} ?>
+
+</body>
+</html>

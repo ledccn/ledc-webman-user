@@ -1,0 +1,60 @@
+<?=layui_template()->header($title, $options ?? [])?>
+<?=layui_template()->nav()?>
+
+<div class="layui-container ws-container">
+    <!-- 正文左侧菜单 -->
+    <div class="layui-panel ws-menu">
+        <ul class="layui-menu layui-menu-lg ws-docs-menu">
+        <?php foreach ($list as $item) { ?>
+            <?php if ($item->articles->count()) { ?>
+            <li class="layui-menu-item-group" lay-options="{type: 'group', isAllowSpread: true}">
+                <div class="layui-menu-body-title" data-id="cate_id<?=$item->cate_id?>"><?=$item->title?></div>
+                <ul>
+                    <?php foreach ($item->articles as $article) { ?>
+                    <?php if ($article->article_id === $article_id) { ?><li class="layui-menu-item-checked2"><?php } else { ?><li><?php } ?>
+                        <div class="layui-menu-body-title" data-id="article_id<?=$article->article_id?>">
+                            <a href="<?=route('Docs.article', ['id' => $article->article_id])?>">
+                                <span><?=$article->title?></span>
+                                <?php if ($article->views) { ?>
+                                <span class="layui-font-12 layui-font-gray"><i class="layui-icon layui-icon-eye"></i><?=$article->views?></span>
+                                <?php } ?>
+                                <?=$article->badge?>
+                            </a>
+                        </div>
+                    </li>
+                    <?php } ?>
+                </ul>
+            </li>
+            <?php } ?>
+        <?php } ?>
+        </ul>
+    </div>
+
+    <!-- 页面右侧内容 -->
+    <div class="ws-content" id="WS_CONTENT">
+        <div class="ws-side">
+            <div class="ws-side-fixed">
+                <div class="ws-dir">
+                    <ul class="ws-dir-ul">
+                        <li class="layui-this"><a href="#idea">概要</a></li>
+                        <li><a href="#define">定义模块</a></li>
+                        <li><a href="#use">使用模块</a></li>
+                        <li><a href="#extend">扩展模块</a></li>
+                        <li><a href="#index">建立模块入口</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="layui-text ws-text" id="WS_TEXT">
+        <!-- 内容 开始 --><?=$content->content?><!-- 内容 结束 -->
+        </div>
+        <div class="ws-text-tools">
+            <a href="javascript:;" rel="nofollow" target="_blank"
+               title="在 Github 上编辑此文档">
+                <i class="layui-icon layui-icon-edit"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<?=layui_template()->footer($options ?? [])?>

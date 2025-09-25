@@ -1,0 +1,76 @@
+<!-- Nav导航菜单 开始 -->
+<nav class="layui-header ws-header ws-bg-light">
+    <div class="layui-container">
+        <div class="ws-logo">
+            <a class="logo" href="//<?=$this->config->domain?>"><?=$this->config->title?></a>
+        </div>
+        <div class="ws-header-assist">
+        </div>
+        <div class="ws-header-menu">
+            <ul class="layui-nav layui-bg-gray ws-bg-light" id="LAY_NAV_TOP">
+                <!--DB-Navs 开始-->
+                <?php foreach(navs_layui() as $nav){ ?>
+                <li class="layui-nav-item <?=navs_layui_this($nav->url)?>"><a href="<?=$nav->url?>" target="<?=$nav->target?>" title="<?=$nav->remark?>"><?=$nav->title?></a></li>
+                <?php } ?>
+                <!--DB-Navs 结束-->
+
+                <!--Event-Navs 开始-->
+                <?php if(count($navs) > 1) { ?>
+
+                <?php foreach($navs as $nav){ ?>
+                <?php if(count($nav['items']) !== 1) {?>
+                <li class="layui-nav-item">
+                    <a href="javascript:;"><?=html_special_chars($nav['name'])?></a>
+                    <dl class="layui-nav-child">
+                        <?php foreach($nav['items'] as $item){ ?>
+                        <dd lay-unselect class="<?=html_special_chars($item['class']??'')?>">
+                            <a href="<?=html_special_chars($item['url'])?>"><?=html_special_chars($item['name'])?></a>
+                        </dd>
+                        <?php } ?>
+                    </dl>
+                </li>
+                <?php } else { $item = current($nav['items']);?>
+                <li class="layui-nav-item layui-hide-xs <?=html_special_chars($item['class']??'')?>">
+                    <a href="<?=html_special_chars($item['url'])?>"><?=html_special_chars($item['name'])?></a>
+                </li>
+                <?php } ?>
+                <?php } ?>
+
+                <?php }else{ ?>
+
+                <?php foreach(current($navs)['items']??[] as $item){ ?>
+                <li class="layui-nav-item layui-hide-xs <?=html_special_chars($item['class']??'')?>">
+                    <a href="<?=html_special_chars($item['url'])?>"><?=html_special_chars($item['name'])?></a>
+                </li>
+                <?php } ?>
+
+                <?php } ?>
+                <!--Event-Navs 结束-->
+
+                <!--登录框 开始-->
+                <?php if(session('user')) { ?>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">
+                        <i class="layui-icon layui-icon-user"></i><?=html_special_chars(session('user.nickname'))?>
+                    </a>
+                    <dl class="layui-nav-child layui-nav-child-c">
+                        <dd><a href="/app/user">会员中心</a></dd>
+                        <dd><a href="/app/user/logout">退出</a></dd>
+                    </dl>
+                </li>
+                <?php }else{ ?>
+                <li class="layui-nav-item"><a href="/app/user/login" title="登录">登录</a>
+                </li>
+                <?php if($setting['register_enable']??true) { ?>
+                <li class="layui-nav-item"><a href="/app/user/register" title="注册">注册</a></li>
+                <?php } ?>
+                <?php } ?>
+                <!--登录框 结束-->
+            </ul>
+            <div class="ws-header-more">
+                <i class="layui-icon layui-icon-shrink-right"></i>
+            </div>
+        </div>
+    </div>
+</nav>
+<!-- Nav导航菜单 结束 -->

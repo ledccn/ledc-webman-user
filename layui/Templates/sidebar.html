@@ -1,0 +1,25 @@
+<!-- 左侧边栏菜单 -->
+<div class="layui-panel ws-menu" id="WS_MENU">
+    <ul class="layui-menu layui-menu-lg ws-docs-menu">
+        <?php foreach ($sidebars as $sidebar) { ?>
+        <li class="layui-menu-item-group" lay-options="{type: 'group', isAllowSpread: true}">
+            <div class="layui-menu-body-title"><?=$sidebar['name']?></div>
+            <ul>
+                <?php foreach($sidebar['items'] as $item) { ?>
+                <li class="<?=empty($item['class']) ? '' : 'layui-menu-item-checked2'?>">
+                    <div class="layui-menu-body-title">
+                        <a href="<?=$item['url']?>">
+                            <span><?=$item['name']?></span>
+                            <?php if (!empty($item['gray'])) { ?>
+                            <span class="layui-font-12 layui-font-gray"><?=$item['gray']?></span>
+                            <?php } ?>
+                            <?=$item['badge'] ?? ''?>
+                        </a>
+                    </div>
+                </li>
+                <?php } ?>
+            </ul>
+        </li>
+        <?php } ?>
+    </ul>
+</div>

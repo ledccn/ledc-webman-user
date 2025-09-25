@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html class="no-js" lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title><?=html_special_chars($title . ($title !== $config->title_suffix ? ' - ' . $config->title_suffix : ''))?></title>
+    <meta name="keywords" content="<?=$keywords?>">
+    <meta name="description" content="<?=$description?>">
+    <script>(function(){self!==parent&&(location.href="about:blank")})();</script>
+<!-- 引入 layui.css -->
+    <link href="<?=$this->config->cdn?>/layui/v2.11.6/css/layui.css" rel="stylesheet">
+    <link href="<?=$this->config->cdn?>/css/index.css?v=<?=$version?>" rel="stylesheet">
+<!-- Header区域：css -->
+<?php foreach($css as $c){ ?><link href="<?=$c?>" rel="stylesheet"><?php } ?>
+<!-- Header区域：JavaScript -->
+<?php foreach($js as $j){ ?><script src="<?=$j?>"></script><?php } ?>
+<link rel="shortcut icon" href="<?=$favicon?>?v=<?=$version?>" />
+<!-- 自定义CSS（/head前） -->
+<?php if ($custom_head_css) { echo '<style>' . PHP_EOL . $custom_head_css . PHP_EOL . '</style>' . PHP_EOL; } ?>
+<!-- 自定义HTML（/head前） -->
+<?php if ($custom_head_html) { echo $custom_head_html . PHP_EOL; } ?>
+<?php if ($grayscale) { ?>
+    <style>
+        html{
+            -webkit-filter: grayscale(100%);
+            -moz-filter: grayscale(100%);
+            -o-filter: grayscale(100%);
+            filter: grayscale(100%);
+        }
+    </style>
+<?php } ?>
+</head>
+<!-- 引入 layui.js -->
+<script src="<?=$this->config->cdn?>/layui/v2.11.6/layui.js"></script>
+<body id="WS_BODY" class="">

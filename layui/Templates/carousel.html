@@ -1,0 +1,43 @@
+<?=layui_template()->header()?>
+<?=layui_template()->nav()?>
+
+<div class="layui-container ws-container" id="carousel">
+    <div class="layui-carousel" id="carousel-image">
+<!-- 最大宽度1330px，宽高比 8:3 -->
+        <div carousel-item>
+            <?php foreach ($slides as $slide) { ?>
+            <div data-id="<?=$slide->id?>"><a href="<?=$slide->href?>" target="<?=$slide->target?>"><img src="<?=$slide->image?>" width="100%" alt="<?=$slide->title?>"></a></div>
+            <?php } ?>
+        </div>
+    </div>
+</div>
+<script>
+    layui.use(["jquery", "carousel"], function () {
+        let $ = layui.$;
+        const carousel = layui.carousel;
+        const RATIO = 0.375;
+        let width = $('#carousel').width();
+        let height = width * RATIO;
+        // 渲染 - 图片轮播
+        let inst = carousel.render({
+            elem: '#carousel-image',
+            width: `${width}px`,
+            height:  `${height}px`,
+            interval: 3000
+        });
+
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                console.log(`窗口尺寸变化: 宽度 = ${window.innerWidth}, 高度 = ${window.innerHeight}`);
+
+                inst.reload({
+                    width: $('#carousel').width(),
+                    height: $('#carousel').width() * RATIO
+                });
+            }, 200); // 200毫秒后执行
+        });
+    });
+</script>
+<?=layui_template()->footer($options ?? [])?>
