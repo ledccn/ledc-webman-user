@@ -152,6 +152,16 @@ class Crud extends Base
     }
 
     /**
+     * 验证数据权限：按照数据限制字段构造权限插入数据
+     * @param $data
+     * @return void
+     */
+    protected function authPermissionInsert(&$data): void
+    {
+        $data[$this->dataLimitField] = user_id();
+    }
+
+    /**
      * 验证数据权限
      * @param Model $model
      * @param array $data
