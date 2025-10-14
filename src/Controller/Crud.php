@@ -334,7 +334,7 @@ class Crud extends Base
         }
 
         if ($this->safeDataLimit()) {
-            $this->authPermissionQuery($data);
+            $this->authPermissionInsert($data);
         }
 
         return $data;
