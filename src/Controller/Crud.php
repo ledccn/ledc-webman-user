@@ -60,7 +60,7 @@ class Crud extends Base
         try {
             $where = $this->inputFilter($request->get());
             if ($this->safeDataLimit()) {
-                $where[$this->dataLimitField] = user_id();
+                $this->authPermissionQuery($where);
             }
 
             $query = ($this->model)::query();
@@ -112,8 +112,8 @@ class Crud extends Base
      */
     public function update(Request $request): Response
     {
-        [$id, $data] = $this->updateInput($request);
-        $this->doUpdate($id, $data);
+        [$id, $data, $model] = $this->updateInput($request);
+        $this->doUpdate($id, $data, $model);
         return $this->success();
     }
 
@@ -127,9 +127,47 @@ class Crud extends Base
     {
         $count = 0;
         if ($ids = $this->deleteInput($request)) {
-            $count = $this->model->destroy($ids);
+            $query = ($this->model)::query();
+            $key = $this->model->getKeyName();
+            foreach ($query->whereIn($key, $ids)->get() as $model) {
+                if ($this->safeDataLimit()) {
+                    $this->authPermission($model);
+                }
+
+                $model->delete();
+                $count++;
+            }
         }
         return $this->success('ok', ['count' => $count]);
+    }
+
+    /**
+     * 验证数据权限：按照数据限制字段构造权限查询条件
+     * @param $where
+     * @return void
+     */
+    protected function authPermissionQuery(&$where): void
+    {
+        $where[$this->dataLimitField] = user_id();
+    }
+
+    /**
+     * 验证数据权限
+     * @param Model $model
+     * @param array $data
+     * @return bool
+     */
+    protected function authPermission(Model $model, array $data = []): bool
+    {
+        $user_id = user_id();
+        $dataLimitField = $this->dataLimitField;
+        if ($user_id !== $model->{$dataLimitField}) {
+            throw new BusinessException('无数据权限，类型与值必须相等');
+        }
+        if ($data && array_key_exists($dataLimitField, $data) && $user_id !== $data[$dataLimitField]) {
+            throw new BusinessException('数据域权限验证失败，类型与值必须相等');
+        }
+        return true;
     }
 
     /**
@@ -179,7 +217,7 @@ class Crud extends Base
         }
         // 按照数据限制字段返回数据
         if ($this->safeDataLimit()) {
-            $where[$this->dataLimitField] = user_id();
+            $this->authPermissionQuery($where);
         }
         return [$where, $format, $limit, $field, $order, $page];
     }
@@ -286,7 +324,7 @@ class Crud extends Base
         }
 
         if ($this->safeDataLimit()) {
-            $data[$this->dataLimitField] = user_id();
+            $this->authPermissionQuery($data);
         }
 
         return $data;
@@ -327,14 +365,7 @@ class Crud extends Base
 
         // 检查数据域是否有更新权限
         if ($this->safeDataLimit()) {
-            $user_id = user_id();
-            $dataLimitField = $this->dataLimitField;
-            if ($user_id !== $model->{$dataLimitField}) {
-                throw new BusinessException('无数据权限，类型与值必须相等');
-            }
-            if (array_key_exists($dataLimitField, $data) && $user_id !== $data[$dataLimitField]) {
-                throw new BusinessException('数据域权限验证失败，类型与值必须相等');
-            }
+            $this->authPermission($model, $data);
         }
 
         $password_filed = 'password';
@@ -347,18 +378,19 @@ class Crud extends Base
             }
         }
         unset($data[$primary_key]);
-        return [$id, $data];
+        return [$id, $data, $model];
     }
 
     /**
      * 执行更新
      * @param $id
      * @param $data
+     * @param Model|null $model
      * @return void
      */
-    protected function doUpdate($id, $data): void
+    protected function doUpdate($id, $data, ?Model $model): void
     {
-        $model = ($this->model)::query()->find($id);
+        $model = $model ?: ($this->model)::query()->find($id);
         foreach ($data as $key => $val) {
             $model->{$key} = $val;
         }
@@ -413,15 +445,7 @@ class Crud extends Base
         if (!$primary_key) {
             throw new BusinessException('该表无主键，不支持删除');
         }
-        $ids = (array)$request->post($primary_key, []);
-        if ($this->safeDataLimit()) {
-            $user_ids = ($this->model)::query()->where($primary_key, $ids)->pluck($this->dataLimitField)->toArray();
-            if (array_diff($user_ids, [user_id()])) {
-                throw new BusinessException('无数据权限');
-            }
-        }
-
-        return $ids;
+        return (array)$request->post($primary_key, []);
     }
 
     /**
