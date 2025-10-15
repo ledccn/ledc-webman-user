@@ -34,11 +34,8 @@ class Crud extends Base
         try {
             [$where, $format, $limit, $field, $order] = $this->selectInput($request);
             $query = $this->doSelect($where, $field, $order);
-
             // 查询前回调 2025年1月22日
-            if (method_exists($this, 'beforeQueryBuilder')) {
-                $this->beforeQueryBuilder($query);
-            }
+            $this->beforeQueryBuilder($query);
             $model = $query->first();
             if (!$model) {
                 return $this->fail('数据不存在');
@@ -50,36 +47,7 @@ class Crud extends Base
     }
 
     /**
-     * 查询单条数据
-     * - 不支持排序字段
-     * @param Request $request
-     * @return Response
-     */
-    public function find(Request $request): Response
-    {
-        try {
-            $where = $this->inputFilter($request->get());
-            if ($this->safeDataLimit()) {
-                $this->authPermissionQuery($where);
-            }
-
-            $query = ($this->model)::query();
-            // 查询前回调 2025年1月22日
-            if (method_exists($this, 'beforeQueryBuilder')) {
-                $this->beforeQueryBuilder($query);
-            }
-            $model = $query->where($where)->first();
-            if (!$model) {
-                return $this->fail('数据不存在');
-            }
-            return $this->success('ok', $model->toArray());
-        } catch (Throwable $throwable) {
-            return $this->fail($throwable->getMessage());
-        }
-    }
-
-    /**
-     * 查询
+     * 查询列表数据
      * @param Request $request
      * @return Response
      * @throws BusinessException
@@ -88,6 +56,8 @@ class Crud extends Base
     {
         [$where, $format, $limit, $field, $order] = $this->selectInput($request);
         $query = $this->doSelect($where, $field, $order);
+        // 查询前回调 2025年1月22日
+        $this->beforeQueryBuilder($query);
         return $this->doFormat($query, $format, $limit);
     }
 
@@ -100,6 +70,8 @@ class Crud extends Base
     public function insert(Request $request): Response
     {
         $data = $this->insertInput($request);
+        // 创建或更新前置：验证数据 2025年10月15日
+        $this->beforeValidateCreateOrUpdate($data);
         $id = $this->doInsert($data);
         return $this->success('ok', ['id' => $id]);
     }
@@ -113,6 +85,8 @@ class Crud extends Base
     public function update(Request $request): Response
     {
         [$id, $data, $model] = $this->updateInput($request);
+        // 创建或更新前置：验证数据 2025年10月15日
+        $this->beforeValidateCreateOrUpdate($data, $model);
         $this->doUpdate($id, $data, $model);
         return $this->success();
     }
@@ -139,6 +113,25 @@ class Crud extends Base
             }
         }
         return $this->success('ok', ['count' => $count]);
+    }
+
+    /**
+     * 查询前置
+     * @param EloquentBuilder|QueryBuilder|Model $query
+     * @return void
+     */
+    protected function beforeQueryBuilder(EloquentBuilder|QueryBuilder|Model $query): void
+    {
+    }
+
+    /**
+     * 创建或更新前置：验证数据
+     * @param array $data 创建或更新的数据
+     * @param Model|null $model 待更新的原始模型
+     * @return void
+     */
+    protected function beforeValidateCreateOrUpdate(array &$data, ?Model $model = null): void
+    {
     }
 
     /**
@@ -304,11 +297,6 @@ class Crud extends Base
             'table_tree' => 'formatTableTree',
             'normal' => 'formatNormal',
         ];
-        // 查询前回调 2025年1月22日
-        if (method_exists($this, 'beforeQueryBuilder')) {
-            $this->beforeQueryBuilder($query);
-        }
-
         $paginator = $query->paginate($limit);
         $total = $paginator->total();
         $items = $paginator->items();
@@ -354,7 +342,7 @@ class Crud extends Base
             $model->{$key} = $val;
         }
         $model->save();
-        return $primary_key ? $model->$primary_key : null;
+        return $primary_key ? $model->{$primary_key} : null;
     }
 
     /**
