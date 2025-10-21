@@ -34,8 +34,6 @@ class Crud extends Base
         try {
             [$where, $format, $limit, $field, $order] = $this->selectInput($request);
             $query = $this->doSelect($where, $field, $order);
-            // 查询前回调 2025年1月22日
-            $this->beforeQueryBuilder($query);
             $model = $query->first();
             if (!$model) {
                 return $this->fail('数据不存在');
@@ -56,8 +54,6 @@ class Crud extends Base
     {
         [$where, $format, $limit, $field, $order] = $this->selectInput($request);
         $query = $this->doSelect($where, $field, $order);
-        // 查询前回调 2025年1月22日
-        $this->beforeQueryBuilder($query);
         return $this->doFormat($query, $format, $limit);
     }
 
@@ -70,8 +66,6 @@ class Crud extends Base
     public function insert(Request $request): Response
     {
         $data = $this->insertInput($request);
-        // 创建或更新回调 2025年10月15日
-        $this->beforeCreateOrUpdate($data);
         $id = $this->doInsert($data);
         return $this->success('ok', ['id' => $id]);
     }
@@ -85,8 +79,6 @@ class Crud extends Base
     public function update(Request $request): Response
     {
         [$id, $data, $model] = $this->updateInput($request);
-        // 创建或更新回调 2025年10月15日
-        $this->beforeCreateOrUpdate($data, $model);
         $this->doUpdate($id, $data, $model);
         return $this->success();
     }
@@ -244,6 +236,8 @@ class Crud extends Base
         }
 
         $model = ($this->model)::query();
+        // 查询前回调 2025年10月21日
+        $this->beforeQueryBuilder($model);
         foreach ($where as $column => $value) {
             if (is_array($value)) {
                 if ($value[0] === 'like' || $value[0] === 'not like') {
@@ -324,6 +318,8 @@ class Crud extends Base
         if ($this->safeDataLimit()) {
             $this->authPermissionInsert($data);
         }
+        // 创建或更新回调 2025年10月15日
+        $this->beforeCreateOrUpdate($data);
 
         return $data;
     }
@@ -365,6 +361,8 @@ class Crud extends Base
         if ($this->safeDataLimit()) {
             $this->authPermission($model, $data);
         }
+        // 创建或更新回调 2025年10月15日
+        $this->beforeCreateOrUpdate($data, $model);
 
         $password_filed = 'password';
         if (isset($data[$password_filed])) {
