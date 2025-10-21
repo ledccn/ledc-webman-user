@@ -70,8 +70,8 @@ class Crud extends Base
     public function insert(Request $request): Response
     {
         $data = $this->insertInput($request);
-        // 创建或更新前置：验证数据 2025年10月15日
-        $this->beforeValidateCreateOrUpdate($data);
+        // 创建或更新回调 2025年10月15日
+        $this->beforeCreateOrUpdate($data);
         $id = $this->doInsert($data);
         return $this->success('ok', ['id' => $id]);
     }
@@ -85,8 +85,8 @@ class Crud extends Base
     public function update(Request $request): Response
     {
         [$id, $data, $model] = $this->updateInput($request);
-        // 创建或更新前置：验证数据 2025年10月15日
-        $this->beforeValidateCreateOrUpdate($data, $model);
+        // 创建或更新回调 2025年10月15日
+        $this->beforeCreateOrUpdate($data, $model);
         $this->doUpdate($id, $data, $model);
         return $this->success();
     }
@@ -113,25 +113,6 @@ class Crud extends Base
             }
         }
         return $this->success('ok', ['count' => $count]);
-    }
-
-    /**
-     * 查询前置
-     * @param EloquentBuilder|QueryBuilder|Model $query
-     * @return void
-     */
-    protected function beforeQueryBuilder(EloquentBuilder|QueryBuilder|Model $query): void
-    {
-    }
-
-    /**
-     * 创建或更新前置：验证数据
-     * @param array $data 创建或更新的数据
-     * @param Model|null $model 待更新的原始模型
-     * @return void
-     */
-    protected function beforeValidateCreateOrUpdate(array &$data, ?Model $model = null): void
-    {
     }
 
     /**
@@ -171,6 +152,25 @@ class Crud extends Base
             throw new BusinessException('数据域权限验证失败，类型与值必须相等');
         }
         return true;
+    }
+
+    /**
+     * 查询前回调
+     * @param EloquentBuilder|QueryBuilder|Model $query
+     * @return void
+     */
+    protected function beforeQueryBuilder(EloquentBuilder|QueryBuilder|Model $query): void
+    {
+    }
+
+    /**
+     * 创建或更新回调
+     * @param array $data 创建或更新的数据
+     * @param Model|null $model 待更新的原始模型
+     * @return void
+     */
+    protected function beforeCreateOrUpdate(array &$data, ?Model $model = null): void
+    {
     }
 
     /**
