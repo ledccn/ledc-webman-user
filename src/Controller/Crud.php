@@ -38,7 +38,8 @@ class Crud extends Base
             if (!$model) {
                 return $this->fail('数据不存在');
             }
-            return $this->success('ok', $model->toArray());
+            $result = $this->afterQueryFirst($model);
+            return $this->success('ok', is_null($result) ? $model->toArray() : $result);
         } catch (Throwable $throwable) {
             return $this->fail($throwable->getMessage());
         }
@@ -153,6 +154,16 @@ class Crud extends Base
      */
     protected function beforeQueryBuilder(EloquentBuilder|QueryBuilder|Model $query): void
     {
+    }
+
+    /**
+     * 查询详情后回调
+     * @param Model $model
+     * @return array|null
+     */
+    protected function afterQueryFirst(Model $model): ?array
+    {
+        return $model->toArray();
     }
 
     /**
